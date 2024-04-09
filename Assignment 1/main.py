@@ -1,8 +1,13 @@
 import tkinter as tk
 import copy
-from dfs import *
+from backtracking import *
+# from _0dfs import *
 import threading
 import psutil
+# from tests import *
+# from CSP import *
+# from _3 import * 
+from AC3 import AC3SudokuSolver, AC3_solver_i
 
 class MainApplication():
     def __init__(self, window):
@@ -11,15 +16,15 @@ class MainApplication():
         self.btn = []
         self.feedback_solution = None
         self.setup_GUI()
-        self.grid_value = [[1, 0, 0, 0, 7, 0, 3, 0, 0],
-                        [0, 8, 0, 0, 2, 0, 7, 0, 0],
-                        [3, 0, 0, 0, 8, 9, 0, 0, 4],
-                        [8, 4, 0, 0, 0, 1, 9, 0, 3],
-                        [0, 0, 3, 7, 0, 8, 5, 0, 0],
-                        [9, 0, 1, 2, 0, 0, 0, 7, 8],
-                        [7, 0, 0, 3, 5, 0, 0, 0, 9],
-                        [0, 0, 9, 0, 4, 0, 0, 5, 0],
-                        [0, 0, 4, 0, 1, 0, 0, 0, 2]]
+        self.grid_value = [[8,0,0,0,0,0,0,0,0],
+          [0,0,3,6,0,0,0,0,0],
+          [0,7,0,0,9,0,2,0,0],
+          [0,5,0,0,0,7,0,0,0],
+          [0,0,0,0,4,5,7,0,0],
+          [0,0,0,1,0,0,0,3,0],
+          [0,0,1,0,0,0,0,6,8],
+          [0,0,8,5,0,0,0,1,0],
+          [0,9,0,0,0,0,4,0,0]]
         self.set_grid_GUI_from_value(self.grid_value)
         # self.get_grid_value_from_GUI()
         # self.reset_grid_colour()
@@ -103,8 +108,23 @@ class MainApplication():
         self.btn_state(False)
         self.set_grid_GUI_from_value()
         board = copy.deepcopy(self.grid_value)
-        solve_thread = threading.Thread(target=dfs_solver, args=(board, self), daemon=True)
+        solve_thread = threading.Thread(target=AC3_solver_i, args=(board, self), daemon=True)
         solve_thread.start()
+    # def solve_board(self):
+    #     self.btn_state(False)
+    #     self.set_grid_GUI_from_value()
+    #     board = copy.deepcopy(self.grid_value)
+        
+    #     # Define a function to solve the Sudoku puzzle in a separate thread
+    #     def solve_sudoku_thread():
+    #         solver = AC3SudokuSolver()
+    #         solver.solveSudoku(board)
+    #         self.set_grid_GUI_from_value(board)
+    #         self.btn_state(True)  # Enable buttons after solving
+        
+    #     # Create and start the thread
+    #     solve_thread = threading.Thread(target=solve_sudoku_thread, daemon=True)
+    #     solve_thread.start()
     
     def copy_grid_values(self):
     # Tạo một bản sao của lưới
@@ -125,11 +145,6 @@ class MainApplication():
                 value = ""
             self.grid_boxes[row][col].set(value)
 
-
-    
-    
-    
-    
     def btn_state(self, clickable):
         for btn in self.btn:
             btn.config(state=tk.NORMAL if clickable else tk.DISABLED)
@@ -152,10 +167,28 @@ class Grid(tk.Entry):
         else:
             self.set(self.cur_value)
 
+
 if __name__ == "__main__":
+    # window = tk.Tk()
+    # MainApplication(window)
+    
+    # window.mainloop()
+    # process = psutil.Process()
+    # print(process.memory_info().rss)  # in bytes 
+    # puzzle = [[8,0,0,0,0,0,0,0,0],
+    #       [0,0,3,6,0,0,0,0,0],
+    #       [0,7,0,0,9,0,2,0,0],
+    #       [0,5,0,0,0,7,0,0,0],
+    #       [0,0,0,0,4,5,7,0,0],
+    #       [0,0,0,1,0,0,0,3,0],
+    #       [0,0,1,0,0,0,0,6,8],
+    #       [0,0,8,5,0,0,0,1,0],
+    #       [0,9,0,0,0,0,4,0,0]]
+    # start = time.time()
+    # dfs_solver(puzzle)
+    # end = time.time()
+    # print(end-start)
     window = tk.Tk()
     MainApplication(window)
     
     window.mainloop()
-    process = psutil.Process()
-    print(process.memory_info().rss)  # in bytes 
