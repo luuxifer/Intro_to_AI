@@ -1,6 +1,8 @@
 import time
 from random import randint, choice
 from collections import defaultdict
+from datetime import timedelta
+
 
 def dfs_solver(board, GUI=None):
     begin_time = time.time()
@@ -11,8 +13,14 @@ def dfs_solver(board, GUI=None):
         GUI.btn_state(True)
 
     time_to_solve = end_time - begin_time
-    print (time_to_solve)
-    return solved_board
+    print(time_to_solve)
+
+    # Convert the elapsed time to a timedelta object
+    elapsed_time_delta = timedelta(seconds=time_to_solve)
+    # Format the elapsed time as a string in HH:MM:SS format
+    elapsed_time_str = str(elapsed_time_delta)
+
+    return solved_board, elapsed_time_str
 
 def is_solve(board):
     """Checks if the board is completely filled with non zero numbers"""

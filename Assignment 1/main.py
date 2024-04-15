@@ -1,6 +1,7 @@
 import tkinter as tk
 import copy
 from backtracking import *
+from tkinter import ttk 
 # from _0dfs import *
 import threading
 import psutil
@@ -31,32 +32,88 @@ class MainApplication():
         
     def setup_GUI(self):
         self.window.title("Sudoku")
+        # self.window.configure(bg="#BEF6F2")
         self.create_window()
         self.create_grid()
         self.create_btn()
+        self.create_checklist()
+        self.create_table()
         self.feedback_solution = tk.Label(self.window, text="")
         self.feedback_solution.grid(column=3, row=12, columnspan=2)
 
     def create_window(self):
-        self.window.geometry('900x600')
-        self.window.columnconfigure(0, minsize=20)
-        self.window.rowconfigure(0, minsize=20)
+        self.window.geometry('1400x600')
+        for col in range(30):
+            self.window.columnconfigure(col, weight=1, minsize=20)
         self.window.rowconfigure(10, minsize=20)
     
     def create_btn(self):
-        rst_btn = tk.Button(self.window, text="Reset board", command=self.set_grid_GUI_from_value, font=('Ubuntu', 12), justify='center')
-        rst_btn.grid(column=1, row=11, columnspan=2)
-        new_btn = tk.Button(self.window, text="New board", command=self.new_board, font=('Ubuntu', 12), justify='center')
-        new_btn.grid(column=3, row=11, columnspan=2)
+            style = ttk.Style()
+            style.configure('Custom.TButton', foreground='black', background='#4CAF50', font=('Ubuntu', 12))
 
-        solve_btn = tk.Button(self.window, text="Solve board", command=self.solve_board, font=('Ubuntu', 12), justify='center')
-        solve_btn.grid(column=5, row=11, columnspan=2) 
+            rst_btn = ttk.Button(self.window, text="Reset board", command=self.set_grid_GUI_from_value, style='Custom.TButton')
+            rst_btn.grid(column=1, row=11, columnspan=2)
 
-        check_btn = tk.Button(self.window, text="Check board", command=self.check_board, font=('Ubuntu', 12), justify='center')
-        check_btn.grid(column=7, row=11, columnspan=2)
+            new_btn = ttk.Button(self.window, text="New board", command=self.new_board, style='Custom.TButton')
+            new_btn.grid(column=3, row=11, columnspan=2)
 
-        self.btn = [rst_btn, new_btn, solve_btn, check_btn]
+            solve_btn = ttk.Button(self.window, text="Solve board", command=self.solve_board, style='Custom.TButton')
+            solve_btn.grid(column=5, row=11, columnspan=2)
 
+            check_btn = ttk.Button(self.window, text="Check board", command=self.check_board, style='Custom.TButton')
+            check_btn.grid(column=7, row=11, columnspan=2)
+
+            self.btn = [rst_btn, new_btn, solve_btn, check_btn]
+
+    def create_checklist(self):
+        option1_var = tk.BooleanVar()
+        option2_var = tk.BooleanVar()
+        
+        # Header label
+        header_label = tk.Label(self.window, text="Choose algorithm", font=('Ubuntu', 14))
+        header_label.grid(row=1, column=11, columnspan=9)  # Adjust row and column as needed
+
+        # Create the first checkbox
+        algo_1 = tk.Checkbutton(self.window, text="DFS", variable=option1_var, command=self.solve_board, font=('Ubuntu', 12), justify='center')
+        algo_1.grid(row=2, column=11)  # Adjust row and column as needed
+        
+        # Create the second checkbox
+        algo_2 = tk.Checkbutton(self.window, text="AC3", variable=option2_var, command=self.solve_board, font=('Ubuntu', 12), justify='center')
+        algo_2.grid(row=2, column=15)  # Adjust row and column as needed
+
+        # Create the third checkbox
+        algo_3 = tk.Checkbutton(self.window, text="MRV", variable=option2_var, command=self.solve_board, font=('Ubuntu', 12), justify='center')
+        algo_3.grid(row=2, column=19)  # Adjust row and column as needed
+
+
+
+
+    def create_table(self):
+        # Update the "Strategy" label font settings
+        label = tk.Label(self.window, text="STRATEGY", font=('Ubuntu', 14, 'bold'))  # Increased size and bold
+        label.grid(row=5, column=11)
+
+        label = tk.Label(self.window, text="DFS", font=('Ubuntu'))  # Increased size and bold
+        label.grid(row=6, column=11)
+
+        label = tk.Label(self.window, text="AC3", font=('Ubuntu'))  # Increased size and bold
+        label.grid(row=7, column=11)
+
+        label = tk.Label(self.window, text="MRV", font=('Ubuntu'))  # Increased size and bold
+        label.grid(row=8, column=11)
+
+        label = tk.Label(self.window, text="LCV", font=('Ubuntu'))  # Increased size and bold
+        label.grid(row=9, column=11)
+
+        label = tk.Label(self.window, text="ELAPSED TIME", font=('Ubuntu', 14, 'bold'))  # Increased size and bold
+        label.grid(row=5, column=15)
+
+        self.elapsed_time_label = tk.Label(self.window, text="0", font=('Ubuntu', 12))
+        self.elapsed_time_label.grid(row=6, column=15)
+
+        self.elapsed_time_label = tk.Label(self.window, text="0", font=('Ubuntu', 12))
+        self.elapsed_time_label.grid(row=6, column=15)
+        
     def create_grid(self):
         for row in range(9):
             self.grid_boxes.append([])
@@ -104,11 +161,27 @@ class MainApplication():
         else:
             self.feedback_solution.config(text='Incorrect Solution', fg='Red')
 
+    # def solve_board(self):
+    #     self.btn_state(False)
+    #     self.set_grid_GUI_from_value()
+    #     board = copy.deepcopy(self.grid_value)
+    #     solve_thread = threading.Thread(target=dfs_solver, args=(board, self), daemon=True)
+    #     solve_thread.start()
+
     def solve_board(self):
         self.btn_state(False)
         self.set_grid_GUI_from_value()
         board = copy.deepcopy(self.grid_value)
-        solve_thread = threading.Thread(target=AC3_solver_i, args=(board, self), daemon=True)
+
+        # Define a function to solve the Sudoku puzzle in a separate thread
+        def solve_sudoku_thread():
+            solved_board, elapsed_time_str = dfs_solver(board, self)
+            self.set_grid_GUI_from_value(solved_board)
+            self.elapsed_time_label.config(text=f"{elapsed_time_str}")
+            self.btn_state(True)  # Enable buttons after solving
+
+        # Create and start the thread
+        solve_thread = threading.Thread(target=solve_sudoku_thread, daemon=True)
         solve_thread.start()
     # def solve_board(self):
     #     self.btn_state(False)
