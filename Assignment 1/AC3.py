@@ -1,5 +1,6 @@
 import time
 from collections import deque, defaultdict
+from utils import *
 
 def AC3_solver_i(board, GUI=None):
     begin_time = time.time()
@@ -10,9 +11,7 @@ def AC3_solver_i(board, GUI=None):
     if GUI:
         GUI.btn_state(True)
 
-    time_to_solve = end_time - begin_time
-    print (time_to_solve)
-    return board
+    return board, format_time(end_time - begin_time)
 
 class CSP(object):
     def __init__(self, variables = [], adjList = {}, domains = {}) -> None:
@@ -159,16 +158,16 @@ class AC3SudokuSolver(SudokuSolver):
         return False
     
 
-# def AC3_solver(board, GUI=None):
-#     begin_time = time.time()
-#     solver = AC3SudokuSolver()
-#     solver.solveSudoku(board)
-#     end_time = time.time()
-
-#     if GUI:
-#         GUI.btn_state(True)
-
-#     time_to_solve = end_time - begin_time
-#     print (time_to_solve)
-#     return board
-
+if __name__ == "__main__":
+    board = [[8,0,0,0,0,0,0,0,0],
+          [0,0,3,6,0,0,0,0,0],
+          [0,7,0,0,9,0,2,0,0],
+          [0,5,0,0,0,7,0,0,0],
+          [0,0,0,0,4,5,7,0,0],
+          [0,0,0,1,0,0,0,3,0],
+          [0,0,1,0,0,0,0,6,8],
+          [0,0,8,5,0,0,0,1,0],
+          [0,9,0,0,0,0,4,0,0]]
+    solve_board, time = AC3_solver_i(board)
+    print(time)
+    

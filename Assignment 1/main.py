@@ -1,14 +1,10 @@
 import tkinter as tk
 import copy
-from backtracking import *
+from AC3.MY_SUDOKU.dfs import *
 from tkinter import ttk 
-# from _0dfs import *
 import threading
-import psutil
-# from tests import *
-# from CSP import *
-# from _3 import * 
 from AC3 import AC3SudokuSolver, AC3_solver_i
+import tkinter.messagebox as messagebox
 
 class MainApplication():
     def __init__(self, window):
@@ -29,6 +25,9 @@ class MainApplication():
         self.set_grid_GUI_from_value(self.grid_value)
         # self.get_grid_value_from_GUI()
         # self.reset_grid_colour()
+
+        # Define a class-level variable to store the currently selected algorithm
+        self.selected_algorithm = None
         
     def setup_GUI(self):
         self.window.title("Sudoku")
@@ -65,27 +64,44 @@ class MainApplication():
 
             self.btn = [rst_btn, new_btn, solve_btn, check_btn]
 
+    def show_warning(self, message):
+        messagebox.showwarning("Warning", message)
+
     def create_checklist(self):
         option1_var = tk.BooleanVar()
         option2_var = tk.BooleanVar()
-        
+        option3_var = tk.BooleanVar()
+        option4_var = tk.BooleanVar()
+        option5_var = tk.BooleanVar()
+
         # Header label
         header_label = tk.Label(self.window, text="Choose algorithm", font=('Ubuntu', 14))
         header_label.grid(row=1, column=11, columnspan=9)  # Adjust row and column as needed
 
         # Create the first checkbox
-        algo_1 = tk.Checkbutton(self.window, text="DFS", variable=option1_var, command=self.solve_board, font=('Ubuntu', 12), justify='center')
+        algo_1 = tk.Checkbutton(self.window, text="DFS", variable=option1_var, command=lambda: self.update_selected_algorithm("DFS"), font=('Ubuntu', 12), justify='center')
         algo_1.grid(row=2, column=11)  # Adjust row and column as needed
         
         # Create the second checkbox
-        algo_2 = tk.Checkbutton(self.window, text="AC3", variable=option2_var, command=self.solve_board, font=('Ubuntu', 12), justify='center')
+        algo_2 = tk.Checkbutton(self.window, text="AC3", variable=option2_var, command=lambda: self.update_selected_algorithm("AC3"), font=('Ubuntu', 12), justify='center')
         algo_2.grid(row=2, column=15)  # Adjust row and column as needed
 
         # Create the third checkbox
-        algo_3 = tk.Checkbutton(self.window, text="MRV", variable=option2_var, command=self.solve_board, font=('Ubuntu', 12), justify='center')
+        algo_3 = tk.Checkbutton(self.window, text="MRV", variable=option4_var, command=lambda: self.update_selected_algorithm("MRV"), font=('Ubuntu', 12), justify='center')
         algo_3.grid(row=2, column=19)  # Adjust row and column as needed
 
+        # Create the third checkbox
+        algo_4 = tk.Checkbutton(self.window, text="LCV", variable=option5_var, command=lambda: self.update_selected_algorithm("MRV"), font=('Ubuntu', 12), justify='center')
+        algo_4.grid(row=3, column=11)  # Adjust row and column as needed
 
+        # Create the third checkbox
+        algo_4 = tk.Checkbutton(self.window, text="AC3 + MRV + LCV", variable=option5_var, command=lambda: self.update_selected_algorithm("AC3 + MRV + LCV"), font=('Ubuntu', 12), justify='center')
+        algo_4.grid(row=3, column=15)  # Adjust row and column as needed
+
+        # Assign the BooleanVars to instance variables for later access
+        self.option1_var = option1_var
+        self.option2_var = option2_var
+        self.option3_var = option3_var
 
 
     def create_table(self):
@@ -108,11 +124,11 @@ class MainApplication():
         label = tk.Label(self.window, text="ELAPSED TIME", font=('Ubuntu', 14, 'bold'))  # Increased size and bold
         label.grid(row=5, column=15)
 
-        self.elapsed_time_label = tk.Label(self.window, text="0", font=('Ubuntu', 12))
-        self.elapsed_time_label.grid(row=6, column=15)
+        self.elapsed_time_label_dfs = tk.Label(self.window, text="0", font=('Ubuntu', 12))
+        self.elapsed_time_label_dfs.grid(row=6, column=15)
 
-        self.elapsed_time_label = tk.Label(self.window, text="0", font=('Ubuntu', 12))
-        self.elapsed_time_label.grid(row=6, column=15)
+        self.elapsed_time_label_ac3 = tk.Label(self.window, text="0", font=('Ubuntu', 12))
+        self.elapsed_time_label_ac3.grid(row=7, column=15)
         
     def create_grid(self):
         for row in range(9):
@@ -168,21 +184,63 @@ class MainApplication():
     #     solve_thread = threading.Thread(target=dfs_solver, args=(board, self), daemon=True)
     #     solve_thread.start()
 
+    def update_selected_algorithm(self, algorithm):
+        self.selected_algorithm = algorithm
+        
     def solve_board(self):
+        # Kiểm tra xem có giải thuật nào được chọn không
+        if not self.selected_algorithm:
+            self.show_warning("Please select an algorithm!")
+            return
+
+        # Kiểm tra xem có nhiều hơn một giải thuật được chọn không
+        selected_algorithms = [self.option1_var.get(), self.option2_var.get(), self.option3_var.get()]
+        if sum(selected_algorithms) != 1:
+            self.show_warning("Please select exactly one algorithm!")
+            return
+
         self.btn_state(False)
         self.set_grid_GUI_from_value()
         board = copy.deepcopy(self.grid_value)
 
-        # Define a function to solve the Sudoku puzzle in a separate thread
-        def solve_sudoku_thread():
-            solved_board, elapsed_time_str = dfs_solver(board, self)
-            self.set_grid_GUI_from_value(solved_board)
-            self.elapsed_time_label.config(text=f"{elapsed_time_str}")
-            self.btn_state(True)  # Enable buttons after solving
+        if self.selected_algorithm == "DFS":
+            # Define a function to solve the Sudoku puzzle using DFS in a separate thread
+            def solve_sudoku_thread():
+                solved_board, elapsed_time_str = dfs_solver(board, self)
+                self.set_grid_GUI_from_value(solved_board)
+                self.elapsed_time_label_dfs.config(text=f"{elapsed_time_str}")
+                self.btn_state(True)  # Enable buttons after solving
 
-        # Create and start the thread
-        solve_thread = threading.Thread(target=solve_sudoku_thread, daemon=True)
-        solve_thread.start()
+            # Create and start the thread
+            solve_thread = threading.Thread(target=solve_sudoku_thread, daemon=True)
+            solve_thread.start()
+
+        elif self.selected_algorithm == "AC3":
+            # Define a function to solve the Sudoku puzzle using AC3 in a separate thread
+            def solve_sudoku_thread():
+                # solver = AC3SudokuSolver()
+                # solver.solveSudoku(board)
+                # self.set_grid_GUI_from_value(board)
+                solved_board, elapsed_time_str = AC3_solver_i(board, self)
+                self.set_grid_GUI_from_value(solved_board)
+                self.elapsed_time_label_ac3.config(text=f"{elapsed_time_str}")
+                self.btn_state(True)  # Enable buttons after solving
+            
+            # Create and start the thread
+            solve_thread = threading.Thread(target=solve_sudoku_thread, daemon=True)
+            solve_thread.start()
+            self.selected_algorithm = None  # Reset selected algorithm
+
+        elif self.selected_algorithm == "MRV":
+            # Define a function to solve the Sudoku puzzle using MRV in a separate thread
+            # Replace this with your MRV solver function
+            def solve_sudoku_thread():
+                pass
+
+            # Create and start the thread
+            solve_thread = threading.Thread(target=solve_sudoku_thread, daemon=True)
+            solve_thread.start()
+
     # def solve_board(self):
     #     self.btn_state(False)
     #     self.set_grid_GUI_from_value()
