@@ -2,7 +2,7 @@ import time
 from collections import deque, defaultdict
 from utils import *
 
-def AC3_solver_i(board, GUI=None):
+def AC3_solver(board, GUI=None):
     begin_time = time.time()
     solver = AC3SudokuSolver()
     solver.solveSudoku(board, GUI)
@@ -168,6 +168,6 @@ if __name__ == "__main__":
           [0,0,1,0,0,0,0,6,8],
           [0,0,8,5,0,0,0,1,0],
           [0,9,0,0,0,0,4,0,0]]
-    solve_board, time = AC3_solver_i(board)
+    solve_board, time = AC3_solver(board)
     print(time)
     

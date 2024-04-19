@@ -1,9 +1,10 @@
 import tkinter as tk
 import copy
-from AC3.MY_SUDOKU.dfs import *
+from dfs import *
 from tkinter import ttk 
 import threading
-from AC3 import AC3SudokuSolver, AC3_solver_i
+from ac3 import AC3SudokuSolver, AC3_solver
+from mrv import mrv_solver
 import tkinter.messagebox as messagebox
 
 class MainApplication():
@@ -87,11 +88,11 @@ class MainApplication():
         algo_2.grid(row=2, column=15)  # Adjust row and column as needed
 
         # Create the third checkbox
-        algo_3 = tk.Checkbutton(self.window, text="MRV", variable=option4_var, command=lambda: self.update_selected_algorithm("MRV"), font=('Ubuntu', 12), justify='center')
+        algo_3 = tk.Checkbutton(self.window, text="MRV", variable=option3_var, command=lambda: self.update_selected_algorithm("MRV"), font=('Ubuntu', 12), justify='center')
         algo_3.grid(row=2, column=19)  # Adjust row and column as needed
 
         # Create the third checkbox
-        algo_4 = tk.Checkbutton(self.window, text="LCV", variable=option5_var, command=lambda: self.update_selected_algorithm("MRV"), font=('Ubuntu', 12), justify='center')
+        algo_4 = tk.Checkbutton(self.window, text="LCV", variable=option4_var, command=lambda: self.update_selected_algorithm("MRV"), font=('Ubuntu', 12), justify='center')
         algo_4.grid(row=3, column=11)  # Adjust row and column as needed
 
         # Create the third checkbox
@@ -102,7 +103,8 @@ class MainApplication():
         self.option1_var = option1_var
         self.option2_var = option2_var
         self.option3_var = option3_var
-
+        self.option4_var = option4_var
+        self.option5_var = option5_var
 
     def create_table(self):
         # Update the "Strategy" label font settings
@@ -129,6 +131,9 @@ class MainApplication():
 
         self.elapsed_time_label_ac3 = tk.Label(self.window, text="0", font=('Ubuntu', 12))
         self.elapsed_time_label_ac3.grid(row=7, column=15)
+
+        self.elapsed_time_label_mrv = tk.Label(self.window, text="0", font=('Ubuntu', 12))
+        self.elapsed_time_label_mrv.grid(row=8, column=15)
         
     def create_grid(self):
         for row in range(9):
@@ -221,7 +226,7 @@ class MainApplication():
                 # solver = AC3SudokuSolver()
                 # solver.solveSudoku(board)
                 # self.set_grid_GUI_from_value(board)
-                solved_board, elapsed_time_str = AC3_solver_i(board, self)
+                solved_board, elapsed_time_str = AC3_solver(board, self)
                 self.set_grid_GUI_from_value(solved_board)
                 self.elapsed_time_label_ac3.config(text=f"{elapsed_time_str}")
                 self.btn_state(True)  # Enable buttons after solving
@@ -235,11 +240,15 @@ class MainApplication():
             # Define a function to solve the Sudoku puzzle using MRV in a separate thread
             # Replace this with your MRV solver function
             def solve_sudoku_thread():
-                pass
+                solved_board, elapsed_time_str = mrv_solver(board, self)
+                self.set_grid_GUI_from_value(solved_board)
+                self.elapsed_time_label_mrv.config(text=f"{elapsed_time_str}")
+                self.btn_state(True)  # Enable buttons after solving
 
             # Create and start the thread
             solve_thread = threading.Thread(target=solve_sudoku_thread, daemon=True)
             solve_thread.start()
+            self.selected_algorithm = None  # Reset selected algorithm
 
     # def solve_board(self):
     #     self.btn_state(False)
