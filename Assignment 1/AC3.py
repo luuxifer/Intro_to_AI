@@ -1,17 +1,22 @@
 import time
 from collections import deque, defaultdict
 from utils import *
+import tracemalloc
 
 def AC3_solver(board, GUI=None):
+    memory_list = []
     begin_time = time.time()
+    tracemalloc.start()
     solver = AC3SudokuSolver()
     solver.solveSudoku(board, GUI)
+    memory_list.append(tracemalloc.get_traced_memory()[1])
+    tracemalloc.stop()
     end_time = time.time()
 
     if GUI:
         GUI.btn_state(True)
 
-    return board, format_time(end_time - begin_time)
+    return board, (end_time - begin_time), memory_list
 
 class CSP(object):
     def __init__(self, variables = [], adjList = {}, domains = {}) -> None:

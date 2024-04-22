@@ -3,6 +3,7 @@ import heapq
 from dataclasses import dataclass, field
 from typing import List, Tuple
 from utils import *
+import tracemalloc
 
 Sudoku = List[List[int]]
 
@@ -20,15 +21,6 @@ board = [[8,0,0,0,0,0,0,0,0],
 class Node:
     """
     A class to represent a node in a Sudoku puzzle.
-
-    Attributes
-    ----------
-    length : int
-        The length of the domain of the node.
-    domain : set
-        The set of possible values for the given node.
-    indices : tuple
-        The row and column indices of the node in the Sudoku puzzle.
     """
     length: int
     domain: set = field(compare=False)
@@ -38,20 +30,6 @@ class Node:
 def domain(board: Sudoku, i: int, j: int) -> set:
     """
     Finds the domain of a cell in a Sudoku board.
-
-    Parameters
-    ----------
-    board: Sudoku
-        A 9x9 list representing the Sudoku puzzle.
-    i: int
-        The row index of the cell.
-    j: int
-        The column index of the cell.
-
-    Returns
-    -------
-    set
-        The set of possible values for the given cell.
     """
     full_domain = set(range(1, 10))
 
@@ -71,16 +49,6 @@ def domain(board: Sudoku, i: int, j: int) -> set:
 def mrv_indices(board: Sudoku) -> tuple:
     """
     Finds the minimal remaining values (MRV).
-
-    Parameters
-    ----------
-    board: Sudoku
-        A 9x9 list representing the Sudoku puzzle.
-
-    Returns
-    -------
-    tuple
-        A tuple containing the row index, column index, and domain of the MRV cell.
     """
     heap = list()
     for i in range(9):
@@ -96,22 +64,6 @@ def mrv_indices(board: Sudoku) -> tuple:
 def validate(board: Sudoku, i: int, j: int, x: int) -> bool:
     """
     Checks if a value x can be placed in the cell (i, j) of a Sudoku board without violating any constraints.
-
-    Parameters
-    ----------
-    board: Sudoku
-        A 9x9 list representing the Sudoku puzzle.
-    i: int
-        The row index of the cell.
-    j: int
-        The column index of the cell.
-    x: int
-        The value to be checked for placement in the cell (i, j).
-
-    Returns
-    -------
-    bool
-        True if the value x can be placed in the cell (i, j), False otherwise.
     """
     for n in range(9):
         if (board[i][n] == x) or (board[n][j] == x):
@@ -129,16 +81,6 @@ def validate(board: Sudoku, i: int, j: int, x: int) -> bool:
 def solution(board: Sudoku) -> bool:
     """
     Checks if a Sudoku board is completely filled.
-
-    Parameters
-    ----------
-    board: Sudoku
-        A 9x9 list representing the Sudoku puzzle.
-
-    Returns
-    -------
-    bool
-        True if the Sudoku board is completely filled, False otherwise.
     """
     return all(all(row) for row in board)
 
@@ -146,16 +88,6 @@ def solution(board: Sudoku) -> bool:
 def backtrack(board: Sudoku, GUI=None):
     """
     Solves a Sudoku puzzle using backtracking and constraint satisfaction.
-
-    Parameters
-    ----------
-    board: Sudoku
-        A 9x9 list representing the Sudoku puzzle.
-
-    Returns
-    -------
-    Sudoku or List
-        A 9x9 list representing the solved Sudoku puzzle.
     """
     if solution(board):
         return board
@@ -179,11 +111,6 @@ def backtrack(board: Sudoku, GUI=None):
 def print_sudoku(sudoku: Sudoku) -> None:
     """
     Prints a Sudoku puzzle in a visually appealing format.
-
-    Parameters
-    ----------
-    sudoku: list
-        A 9x9 list representing the Sudoku puzzle.
     """
     for i, row in enumerate(sudoku):
         if i % 3 == 0 and i != 0:
@@ -195,11 +122,15 @@ def print_sudoku(sudoku: Sudoku) -> None:
         print()
 
 def mrv_solver(board, GUI=None):
+    memory_list = []
     begin_time = time.time()
+    tracemalloc.start()
     solved_board = backtrack(board, GUI)
+    memory_list.append(tracemalloc.get_traced_memory()[1])
+    tracemalloc.stop()
     end_time = time.time()
 
     if GUI:
         GUI.btn_state(True)
-
-    return solved_board, format_time(end_time - begin_time)
+    elapsed_time_seconds = end_time - begin_time
+    return solved_board, elapsed_time_seconds, memory_list

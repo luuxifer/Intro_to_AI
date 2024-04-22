@@ -3,16 +3,21 @@ from random import randint, choice
 from collections import defaultdict
 from datetime import timedelta
 from utils import *
+import tracemalloc
 
 def dfs_solver(board, GUI=None):
+    memory_list = []
     begin_time = time.time()
+    tracemalloc.start()
     solved_board = backtracking(board, 0, 0, GUI)
+    memory_list.append(tracemalloc.get_traced_memory()[1])
+    tracemalloc.stop()
     end_time = time.time()
 
     if GUI:
         GUI.btn_state(True)
 
-    return solved_board, format_time(end_time - begin_time)
+    return solved_board, (end_time - begin_time), memory_list
 
 def is_solve(board):
     """Checks if the board is completely filled with non zero numbers"""
