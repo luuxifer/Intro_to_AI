@@ -1,5 +1,5 @@
 import pygame
-import chess
+# import chess
 
 class Display():
     def __init__(self, board):
@@ -17,6 +17,8 @@ class Display():
         self.clock = pygame.time.Clock()
         self.board = board
         self.fen = board.fen()
+
+        self.level_selected = None
 
         pygame.init()
         self.window = pygame.display.set_mode((self.dim, self.dim))
@@ -151,6 +153,32 @@ class Display():
                 if str(pos)[0: 2] == self.selected_square:
                     self.show_moves_surf_list.append((self.boardPos[str(pos)[2: 4]][0], self.boardPos[str(pos)[2: 4]][1]))
 
+    def game_over_menu(self):
+        while self.game_over:
+            for event in pygame.event.get():
+                if event.type == pygame.QUIT:
+                    pygame.quit()
+
+            self.window.fill((255, 255, 255))
+            large_text = pygame.font.SysFont("comicsansms", 50)
+            text_surf, text_rect = self.text_objects("Game Over", large_text)
+            text_rect.center = (self.dim / 2, 50)
+            self.window.blit(text_surf, text_rect)
+
+            # Hiển thị thông báo kết quả
+            result_text = "You Win!" if self.board.is_checkmate() else "It's a Draw!"
+            result_surf, result_rect = self.text_objects(result_text, large_text)
+            result_rect.center = (self.dim / 2, 150)
+            self.window.blit(result_surf, result_rect)
+
+            # Hiển thị các nút tùy chọn
+            self.button("Play Again", 150, 300, 200, 50, (0, 200, 0), (0, 255, 0), 4)
+            self.button("Main Menu", 150, 400, 200, 50, (200, 0, 0), (255, 0, 0), 5)
+            self.button("Quit", 150, 500, 200, 50, (200, 200, 200), (255, 255, 255), 6)
+
+            pygame.display.update()
+            self.clock.tick(15)
+
     ####################
     # UI game
     def main_menu(self):
@@ -178,29 +206,55 @@ class Display():
             pygame.display.update()
             self.clock.tick(15)
 
+    def level_menu(self):
+        gray = (220, 220, 220)
+        # level_selected = None
+        dark_gray = (128,128,128)
+
+        while self.level_selected is None:
+            for event in pygame.event.get():
+                if event.type == pygame.QUIT:
+                    pygame.quit()
+                    return
+
+            self.window.fill((255, 255, 255))
+            large_text = pygame.font.SysFont("comicsansms", 50)
+            text_surf, text_rect = self.text_objects("Select Level", large_text)
+            text_rect.center = (self.dim / 2, 50)
+            self.window.blit(text_surf, text_rect)
+
+            level_buttons = [("Easy", 50, 150, 4), ("Medium", 50, 250, 5), ("Hard", 50, 350, 6)]
+
+            for level, x, y, action in level_buttons:
+                self.button(level, x, y, 400, 80, gray, dark_gray, action)
+
+            pygame.display.update()
+            self.clock.tick(15)
+
     def button(self, msg, x, y, w, h, ic, ac, action=None):
         mouse = pygame.mouse.get_pos()
         click = pygame.mouse.get_pressed()
         if x + w > mouse[0] > x and y + h > mouse[1] > y:
             pygame.draw.rect(self.window, ac, (x, y, w, h))
 
-            if click[0] == 1 and action != None:
+            if click[0] == 1 and action is not None:
                 if action == 1:
                     self.player_color = "W"
-                    self.run = True
+                    # self.run = True
                     self.intro = False
                     self.game_over = False
                 elif action == 2:
                     self.player_color = "B"
-                    self.run = True
+                    # self.run = True
                     self.intro = False
                     self.game_over = False
                 elif action == 3:
                     pygame.quit()
-                elif action == 4:
-                    self.run = False
-                    self.intro = True
+                elif 4 <= action <= 6:  # Kiểm tra action là mức độ khó
+                    self.run = True
+                    self.intro = False
                     self.game_over = False
+                    self.level_selected = action // 2  # Đặt mức độ đã chọn là tên của nút
 
         else:
             pygame.draw.rect(self.window, ic, (x, y, w, h))
@@ -209,6 +263,7 @@ class Display():
         textSurf, textRect = self.text_objects(msg, smallText)
         textRect.center = ((x + (w / 2)), (y + (h / 2)))
         self.window.blit(textSurf, textRect)
+
 
     def text_objects(self, text, font):
         textSurface = font.render(text, True, (0,0,0))

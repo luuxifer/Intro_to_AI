@@ -6,15 +6,17 @@ import pygame as py
 
 # General variables
 MAX, MIN = 100000, -100000
-depth = 4
+depth = 2
 
 board = chess.Board()
 display = Display(board)
+display.level_selected
 
 # Tis function can be run at anytime and wit completely reset the game.
 def setup_game():
     board.reset_board()
     display.main_menu()
+    display.level_menu()
     display.update(board)
     run()
 
@@ -41,9 +43,9 @@ def makeMoveWhite(move, is_late_game):
     else:
         # The depth attribute has to be odd
         if is_late_game:
-            white = minimax(depth + 1, True, MIN, MAX, board, True)
+            white = minimax(display.level_selected + 1, True, MIN, MAX, board, True)
         else:
-            white = minimax(depth + 1, True, MIN, MAX, board, True)
+            white = minimax(display.level_selected + 1, True, MIN, MAX, board, True)
 
         board.push(white)
 
@@ -56,9 +58,9 @@ def makeMoveBlack(move, is_late_game):
     else:
         # The depth attribute has to be even
         if is_late_game:
-            black = minimax(depth + 2, False, MIN, MAX, board, True)
+            black = minimax(display.level_selected + 2, False, MIN, MAX, board, True)
         else:
-            black = minimax(depth, False, MIN, MAX, board, True)
+            black = minimax(display.level_selected, False, MIN, MAX, board, True)
         board.push(black)
 
     display.update(board)
